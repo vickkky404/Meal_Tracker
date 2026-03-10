@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MealTracker — Daily Meal Log</title>
+  <meta name="description" content="Track your daily meals, budget, streaks and history — ₹50 per meal." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Background blobs -->
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+  <div class="bg-blob blob-3"></div>
+
+  <!-- Day Detail Modal -->
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">Meals on …</h3>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer" id="modal-footer"></div>
+    </div>
+  </div>
+
+  <div class="app-container">
+
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-icon">🍽️</div>
+      <div class="header-text">
+        <h1>MealTracker</h1>
+        <p class="header-sub" id="today-date"></p>
+      </div>
+      <div class="header-streak" id="header-streak" title="Current streak">
+        <span class="streak-flame">🔥</span>
+        <span class="streak-count" id="streak-count">0</span>
+        <span class="streak-label">day streak</span>
+      </div>
+    </header>
+
+    <!-- Stats Bar (4 stats) -->
+    <section class="stats-bar">
+      <div class="stat-card">
+        <span class="stat-value" id="stat-meals">0</span>
+        <span class="stat-label">Today's Meals</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-card">
+        <span class="stat-value" id="stat-cost">₹0</span>
+        <span class="stat-label">Today's Spend</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-card">
+        <span class="stat-value" id="stat-month-meals">0</span>
+        <span class="stat-label">Month Meals</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-card">
+        <span class="stat-value" id="stat-month-spend">₹0</span>
+        <span class="stat-label">Month Spend</span>
+      </div>
+    </section>
+
+    <!-- Daily Budget Card -->
+    <section class="section-card budget-card">
+      <div class="budget-top">
+        <div>
+          <h2 class="section-title">💰 Daily Budget</h2>
+          <p class="budget-status-text" id="budget-status-text">Set a budget to track your spending.</p>
+        </div>
+        <div class="budget-right">
+          <span class="budget-remaining" id="budget-remaining">—</span>
+          <span class="budget-remaining-label">remaining</span>
+        </div>
+      </div>
+      <div class="budget-bar-wrap">
+        <div class="budget-bar-track">
+          <div class="budget-bar-fill" id="budget-bar-fill"></div>
+        </div>
+        <span class="budget-pct" id="budget-pct"></span>
+      </div>
+      <div class="budget-inputs">
+        <div class="input-group" style="flex:1;margin-bottom:0">
+          <label for="budget-input" class="input-label">Daily Limit (₹)</label>
+          <input type="number" id="budget-input" class="text-input" min="1" max="9999" placeholder="e.g. 200" />
+        </div>
+        <button class="save-budget-btn" onclick="saveBudgetSetting()">Set</button>
+        <button class="clear-budget-btn" onclick="clearBudget()" title="Remove budget limit">✕</button>
+      </div>
+    </section>
+
+    <!-- Settings Card -->
+    <section class="section-card settings-card">
+      <div class="settings-header">
+        <div>
+          <h2 class="section-title">⚙️ Settings</h2>
+          <p class="section-subtitle" style="margin-bottom:0">Price per meal. Existing meals keep their original price.</p>
+        </div>
+        <span class="price-badge" id="price-badge">₹50</span>
+      </div>
+      <div class="settings-row">
+        <div class="input-group" style="flex:1;margin-bottom:0">
+          <label for="price-input" class="input-label">Price per Meal (₹)</label>
+          <input type="number" id="price-input" class="text-input" min="1" max="9999" placeholder="e.g. 50" />
+        </div>
+        <button class="save-price-btn" onclick="savePriceSetting()">Save</button>
+      </div>
+    </section>
+
+    <!-- Quick Log Section -->
+    <section class="section-card">
+      <h2 class="section-title">🥗 Log a Meal</h2>
+      <p class="section-subtitle">Select meal type and tap "Got It!" Each meal costs <strong id="price-hint">₹50</strong>.</p>
+
+      <div class="meal-types" id="meal-types">
+        <button class="meal-type-btn active" data-type="Breakfast" id="btn-Breakfast">
+          <span class="meal-emoji">🌅</span><span>Breakfast</span>
+        </button>
+        <button class="meal-type-btn" data-type="Lunch" id="btn-Lunch">
+          <span class="meal-emoji">☀️</span><span>Lunch</span>
+        </button>
+        <button class="meal-type-btn" data-type="Snack" id="btn-Snack">
+          <span class="meal-emoji">🧃</span><span>Snack</span>
+        </button>
+        <button class="meal-type-btn" data-type="Dinner" id="btn-Dinner">
+          <span class="meal-emoji">🌙</span><span>Dinner</span>
+        </button>
+        <button class="meal-type-btn" data-type="Late Night" id="btn-LateNight">
+          <span class="meal-emoji">🌃</span><span>Late Night</span>
+        </button>
+      </div>
+
+      <div class="input-group">
+        <label for="meal-note" class="input-label">Meal Note <span class="optional">(optional)</span></label>
+        <input type="text" id="meal-note" class="text-input" placeholder="e.g. Dal Rice, Paneer wrap…" maxlength="60" />
+      </div>
+
+      <button class="log-btn" id="log-btn" onclick="logMeal()">
+        <span class="log-btn-icon">✅</span>
+        Got It! — Log Meal
+      </button>
+
+      <div class="toast" id="toast"></div>
+    </section>
+
+    <!-- Today's Meals -->
+    <section class="section-card">
+      <div class="section-header">
+        <h2 class="section-title">📋 Today's Meals</h2>
+        <button class="clear-btn" onclick="clearToday()">Clear</button>
+      </div>
+      <div id="meal-list"></div>
+    </section>
+
+    <!-- Weekly Summary -->
+    <section class="section-card">
+      <h2 class="section-title">📅 Last 7 Days <span class="hint-text">— tap a day to see meals</span></h2>
+      <div class="weekly-grid" id="weekly-grid"></div>
+    </section>
+
+    <!-- Monthly Overview -->
+    <section class="section-card">
+      <div class="section-header">
+        <h2 class="section-title">📊 Monthly Overview</h2>
+        <span class="month-label" id="month-label"></span>
+      </div>
+      <div class="monthly-stats" id="monthly-stats"></div>
+    </section>
+
+    <!-- Export & Actions -->
+    <section class="section-card">
+      <h2 class="section-title">⬇️ Export &amp; Data</h2>
+      <p class="section-subtitle">Download your full meal history as a spreadsheet-compatible CSV file.</p>
+      <div class="action-row">
+        <button class="export-btn" onclick="exportCSV()">📥 Download CSV</button>
+        <button class="reset-btn" onclick="confirmReset()">🗑️ Reset All Data</button>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
